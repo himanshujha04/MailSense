@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+python-dotenv
+pydantic
+# Optional: for training NLP models (run: pip install scikit-learn && python train_models.py)
+# scikit-learn

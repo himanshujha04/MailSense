@@ -1,0 +1,9 @@
+﻿src/api/client.ts(2,10): error TS1484: 'Email' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/api/client.ts(2,17): error TS1484: 'AnalyticsData' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/components/layout/Sidebar.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/contexts/AuthContext.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/contexts/AuthContext.tsx(1,54): error TS1484: 'ReactNode' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/pages/Analytics.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/Analytics.tsx(4,10): error TS1484: 'AnalyticsData' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/pages/Analytics.tsx(156,37): error TS2304: Cannot find name 'clsx'.
+src/pages/Dashboard.tsx(4,21): error TS2305: Module '"../api/client"' has no exported member 'syncGmail'.
