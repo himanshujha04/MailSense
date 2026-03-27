@@ -81,8 +81,10 @@ def get_email_body(msg):
 def fetch_gmails(days=3, max_emails=500):
     """Fetch emails from the last `days` days only. Limits to `max_emails` to avoid overload."""
     load_dotenv(os.path.join(os.path.dirname(__file__), '.env'), override=True)
-    GMAIL_USER = os.getenv("GMAIL_USER")
-    GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
+    GMAIL_USER = (os.getenv("GMAIL_USER") or "").strip()
+    # Gmail App Passwords are displayed with spaces for readability,
+    # but IMAP login expects a contiguous 16-character token.
+    GMAIL_APP_PASSWORD = re.sub(r"\s+", "", (os.getenv("GMAIL_APP_PASSWORD") or ""))
 
     if not GMAIL_USER or not GMAIL_APP_PASSWORD:
         raise ValueError("Gmail credentials are not configured in .env")

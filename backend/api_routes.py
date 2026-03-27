@@ -227,14 +227,25 @@ def sync_gmail(db: Session = Depends(database.get_db)):
     except Exception as e:
         msg = str(e)
         # Make Gmail IMAP auth failures actionable
-        if "AUTHENTICATIONFAILED" in msg or "Invalid credentials" in msg:
+        if (
+            "AUTHENTICATIONFAILED" in msg
+            or "Invalid credentials" in msg
+            or "authentication failed" in msg.lower()
+        ):
             raise HTTPException(
                 status_code=401,
-                detail="Gmail IMAP authentication failed. Use a Google App Password (16-char) instead of your normal password, and ensure IMAP is enabled.",
+                detail=(
+                    "Gmail IMAP authentication failed. Ensure GMAIL_USER is your full "
+                    "Gmail address and GMAIL_APP_PASSWORD is a 16-character App Password "
+                    "(spaces removed), then restart the backend."
+                ),
             )
-        if "Application-specific password required" in msg:
+        if "Application-specific password required" in msg or "Web login required" in msg:
             raise HTTPException(
                 status_code=401,
-                detail="Google requires an App Password for IMAP. Create a Gmail App Password and set it as GMAIL_APP_PASSWORD in backend/.env, then restart the backend.",
+                detail=(
+                    "Google blocked IMAP login. Use a Gmail App Password from an account "
+                    "with 2-Step Verification enabled, and confirm IMAP access is allowed."
+                ),
             )
         raise HTTPException(status_code=500, detail=msg)
