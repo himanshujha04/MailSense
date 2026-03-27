@@ -125,8 +125,7 @@ def classify_priority(email_subject: str, email_body: str) -> str:
     return "Low"
 
 def determine_folder(scam_label: str, priority: str) -> str:
+    """Move scam to Spam. All others (High, Medium, Low) stay in Inbox for user review."""
     if scam_label == "Scam":
         return "Spam"
-    if priority in ["High", "Medium"]:
-        return "Inbox"
-    return "Archive"
+    return "Inbox"

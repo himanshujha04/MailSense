@@ -7,6 +7,7 @@ import { cleanBodyForDisplay } from '../utils/email';
 import { Mail, Search, AlertTriangle, ShieldCheck, Zap, RefreshCw, Trash2, Bot, ShieldAlert } from 'lucide-react';
 import clsx from 'clsx';
 import { formatDistanceToNow } from 'date-fns';
+import axios from 'axios';
 
 export default function Dashboard() {
     const [searchParams] = useSearchParams();
@@ -44,12 +45,22 @@ export default function Dashboard() {
     const handleSync = async () => {
         try {
             setLoading(true);
-            await syncGmail();
+            const res = await syncGmail();
             const data = await getEmails();
             setEmails(data);
+            alert(res.message); // Inform the user how many emails were synced
         } catch (error) {
             console.error("Failed to sync Gmail:", error);
-            alert("Failed to sync. Make sure your .env has valid GMAIL credentials.");
+            if (axios.isAxiosError(error)) {
+                const status = error.response?.status;
+                const detail =
+                    (error.response?.data as any)?.detail ||
+                    (error.response?.data as any)?.message ||
+                    error.message;
+                alert(status ? `Sync failed (${status}): ${detail}` : `Sync failed: ${detail}`);
+            } else {
+                alert("Failed to sync due to an unexpected error.");
+            }
         } finally {
             setLoading(false);
         }
@@ -120,8 +131,11 @@ export default function Dashboard() {
                     <button
                         onClick={handleSync}
                         disabled={loading}
-                        className="p-2 shrink-0 bg-surface-muted text-text-main hover:bg-surface-muted/80 border border-border rounded-full transition-colors disabled:opacity-50"
-                        title="Sync latest emails (last 3 days)"
+                        className={clsx(
+                            "p-2 shrink-0 bg-surface-muted text-text-main hover:bg-surface-muted/80 border border-border rounded-full transition-all disabled:opacity-50",
+                            loading && "ring-2 ring-accent/30"
+                        )}
+                        title={loading ? "Syncing emails..." : "Sync latest emails (last 3 days)"}
                     >
                         <RefreshCw className={clsx("w-5 h-5", loading && "animate-spin")} />
                     </button>

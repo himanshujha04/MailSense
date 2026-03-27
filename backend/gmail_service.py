@@ -88,7 +88,7 @@ def fetch_gmails(days=3, max_emails=500):
         raise ValueError("Gmail credentials are not configured in .env")
 
     try:
-        mail = imaplib.IMAP4_SSL("imap.gmail.com")
+        mail = imaplib.IMAP4_SSL("imap.gmail.com", timeout=30)
         mail.login(GMAIL_USER, GMAIL_APP_PASSWORD)
         mail.select("inbox")
 
@@ -99,9 +99,11 @@ def fetch_gmails(days=3, max_emails=500):
             return []
 
         email_ids = messages[0].split()
-        # Take most recent up to max_emails (ids are in ascending order by date)
-        recent_ids = email_ids[-max_emails:] if len(email_ids) > max_emails else email_ids
+        # Limit to most recent 50 to avoid timeout
+        recent_ids = email_ids[-50:] if len(email_ids) > 50 else email_ids
         fetched_emails = []
+
+        print(f"Found {len(email_ids)} emails since {since_date}. Syncing last {len(recent_ids)}...")
 
         for e_id in reversed(recent_ids):
             res, msg_data = mail.fetch(e_id, "(RFC822)")
@@ -114,12 +116,27 @@ def fetch_gmails(days=3, max_emails=500):
                     
                     subject = decode_header(msg["Subject"] or "")
                     sender = decode_header(msg.get("From", ""))
+                    message_id = msg.get("Message-ID", "")
+                    
+                    # Parse Date
+                    date_str = msg.get("Date")
+                    timestamp = None
+                    if date_str:
+                        try:
+                            tup = email.utils.parsedate_tz(date_str)
+                            if tup:
+                                timestamp = datetime.fromtimestamp(email.utils.mktime_tz(tup))
+                        except Exception:
+                            pass
+                    
                     raw_body = get_email_body(msg)
                     body = strip_html_and_clean(raw_body) if raw_body else ""
                     fetched_emails.append(schemas.EmailCreate(
                         sender=sender,
                         subject=subject,
-                        body=body or "(No Body Content)"
+                        body=body or "(No Body Content)",
+                        timestamp=timestamp,
+                        message_id=message_id
                     ))
                     
         mail.logout()

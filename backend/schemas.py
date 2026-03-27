@@ -19,11 +19,25 @@ class LoginResponse(BaseModel):
     user: Optional[dict] = None
     message: Optional[str] = None
 
+class UserProfile(BaseModel):
+    username: str
+    email: Optional[str] = None
+
+class UpdateUserRequest(BaseModel):
+    email: Optional[str] = None
+    old_password: Optional[str] = None
+    new_password: Optional[str] = None
+
+class DeleteUserRequest(BaseModel):
+    password: str
+
 
 class EmailCreate(BaseModel):
     sender: str
     subject: str
     body: str
+    timestamp: Optional[datetime] = None
+    message_id: Optional[str] = None
 
 class EmailResponse(BaseModel):
     id: int
@@ -34,6 +48,7 @@ class EmailResponse(BaseModel):
     scam_score: float
     priority: str
     folder: str
+    message_id: Optional[str] = None
     timestamp: datetime
 
     class Config:

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Email, AnalyticsData, AutomationLog } from '../types';
 
-const API_URL = 'http://localhost:8000';
+const API_URL = '/api';
 
 export const apiClient = axios.create({
     baseURL: API_URL,
@@ -49,5 +49,23 @@ export const analyzeEmail = async (email: { sender: string; subject: string; bod
 
 export const syncGmail = async (): Promise<{ message: string }> => {
     const response = await apiClient.post('/sync_gmail');
+    return response.data;
+};
+
+export const getUser = async (username: string): Promise<{ username: string; email?: string | null }> => {
+    const response = await apiClient.get(`/auth/user/${encodeURIComponent(username)}`);
+    return response.data;
+};
+
+export const updateUser = async (
+    username: string,
+    data: { email?: string | null; old_password?: string; new_password?: string }
+): Promise<{ username: string; email?: string | null }> => {
+    const response = await apiClient.patch(`/auth/user/${encodeURIComponent(username)}`, data);
+    return response.data;
+};
+
+export const deleteUser = async (username: string, password: string): Promise<{ message: string }> => {
+    const response = await apiClient.delete(`/auth/user/${encodeURIComponent(username)}`, { data: { password } });
     return response.data;
 };

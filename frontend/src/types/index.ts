@@ -7,6 +7,7 @@ export interface Email {
     scam_score: number;
     priority: string;
     folder: string;
+    message_id?: string;
     timestamp: string;
 }
 

@@ -24,6 +24,7 @@ class Email(Base):
     scam_score = Column(Float)
     priority = Column(String)
     folder = Column(String)
+    message_id = Column(String, index=True, nullable=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
 
 class AutomationLog(Base):

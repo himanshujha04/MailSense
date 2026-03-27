@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Inbox, ShieldAlert, Archive, LogOut, Settings, Sun, Moon, ChevronDown, Zap } from 'lucide-react';
+import { Inbox, ShieldAlert, Archive, LogOut, Settings, Sun, Moon, ChevronDown, Zap, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../../contexts/useAuth';
 import { useTheme } from '../../contexts/ThemeContext';
 import clsx from 'clsx';
@@ -24,6 +24,7 @@ export default function Sidebar() {
         { name: 'Urgent', icon: <Zap className="w-5 h-5" />, path: '/?folder=urgent' },
         { name: 'Spam', icon: <ShieldAlert className="w-5 h-5" />, path: '/?folder=spam' },
         { name: 'Archive', icon: <Archive className="w-5 h-5" />, path: '/?folder=archive' },
+        { name: 'Profile', icon: <UserIcon className="w-5 h-5" />, path: '/profile' },
     ];
 
     return (
@@ -45,16 +46,15 @@ export default function Sidebar() {
                         to={item.path}
                         className={({ isActive }) =>
                             clsx(
-                                "flex items-center space-x-3 px-4 py-3 rounded-xl transition-all font-medium text-sm group relative",
+                                "flex items-center space-x-3 px-4 py-3 rounded-xl transition-all font-semibold text-sm group relative",
                                 isActive
-                                    ? "bg-surface-muted text-text-main border border-border"
+                                    ? "bg-accent/10 text-accent ring-1 ring-accent/20"
                                     : "text-text-muted hover:text-text-main hover:bg-surface-muted/50"
                             )
                         }
                     >
                         {item.icon}
                         <span>{item.name}</span>
-                        <div className="absolute inset-y-0 left-0 w-1 bg-accent rounded-r-full opacity-0 [a.active_&]:opacity-100 transition-opacity" />
                     </NavLink>
                 ))}
             </nav>
@@ -65,8 +65,8 @@ export default function Sidebar() {
                         type="button"
                         onClick={() => setPrefsOpen(!prefsOpen)}
                         className={clsx(
-                            "w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all text-sm font-medium",
-                            prefsOpen ? "bg-surface-muted text-text-main border border-border" : "text-text-muted hover:text-text-main hover:bg-surface-muted/50"
+                            "w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all text-sm font-semibold",
+                            prefsOpen ? "bg-accent/10 text-accent ring-1 ring-accent/20" : "text-text-muted hover:text-text-main hover:bg-surface-muted/50"
                         )}
                     >
                         <span className="flex items-center space-x-3">
@@ -97,9 +97,9 @@ export default function Sidebar() {
                 </div>
                 <button
                     onClick={logout}
-                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-text-muted hover:text-scam hover:bg-scam/10 transition-all text-sm font-medium border border-transparent hover:border-scam/20"
+                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-text-muted hover:text-white hover:bg-scam transition-all text-sm font-semibold border border-transparent hover:border-scam/20 group"
                 >
-                    <LogOut className="w-5 h-5" />
+                    <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
                     <span>Sign Out</span>
                 </button>
             </div>

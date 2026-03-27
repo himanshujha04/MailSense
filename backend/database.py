@@ -17,22 +17,30 @@ def get_db():
     finally:
         db.close()
 
-def _ensure_user_email_column():
-    """Add email column to users table if missing (for existing DBs)."""
+def _ensure_schema_updates():
+    """Add missing columns to existing DB tables if needed."""
     with engine.connect() as conn:
         try:
+            # Check users table for email
             r = conn.execute(__import__("sqlalchemy").text("PRAGMA table_info(users)"))
             cols = [row[1] for row in r.fetchall()]
             if "email" not in cols:
                 conn.execute(__import__("sqlalchemy").text("ALTER TABLE users ADD COLUMN email VARCHAR(255)"))
-                conn.commit()
+            
+            # Check emails table for message_id
+            r = conn.execute(__import__("sqlalchemy").text("PRAGMA table_info(emails)"))
+            cols = [row[1] for row in r.fetchall()]
+            if "message_id" not in cols:
+                conn.execute(__import__("sqlalchemy").text("ALTER TABLE emails ADD COLUMN message_id VARCHAR(255)"))
+            
+            conn.commit()
         except Exception:
             pass
 
 
 def init_db():
     Base.metadata.create_all(bind=engine)
-    _ensure_user_email_column()
+    _ensure_schema_updates()
     seed_default_user()
     seed_demo_emails()
 

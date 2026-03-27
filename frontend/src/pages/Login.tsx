@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/useAuth';
 import { login as apiLogin } from '../api/client';
 import { Shield, Key, User, ArrowRight } from 'lucide-react';
+import axios from 'axios';
 
 export default function Login() {
     const [username, setUsername] = useState('');
@@ -25,8 +26,17 @@ export default function Login() {
             } else {
                 setError(res.message || 'Invalid username or password');
             }
-        } catch (_) {
-            setError('Login failed. Is the server running?');
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                const status = err.response?.status;
+                const msg =
+                    (err.response?.data as any)?.detail ||
+                    (err.response?.data as any)?.message ||
+                    err.message;
+                setError(status ? `Login failed (${status}): ${msg}` : `Login failed: ${msg}`);
+            } else {
+                setError('Login failed due to an unexpected error.');
+            }
         } finally {
             setLoading(false);
         }
