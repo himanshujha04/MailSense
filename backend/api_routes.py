@@ -175,15 +175,19 @@ def sync_gmail(db: Session = Depends(database.get_db)):
         skipped_count = 0
         
         for email_data in new_emails:
-            # Check for duplicates using Message-ID if available, else subject+sender
+            # Check for duplicates using Message-ID if available.
+            # Fallback also considers timestamp to avoid collapsing recurring
+            # messages from the same sender with the same subject.
             if email_data.message_id:
                 exists = db.query(models.Email).filter(
                     models.Email.message_id == email_data.message_id
                 ).first()
             else:
+                fallback_timestamp = email_data.timestamp
                 exists = db.query(models.Email).filter(
                     models.Email.subject == email_data.subject,
-                    models.Email.sender == email_data.sender
+                    models.Email.sender == email_data.sender,
+                    models.Email.timestamp == fallback_timestamp
                 ).first()
             
             if not exists:

@@ -90,7 +90,9 @@ def fetch_gmails(days=3, max_emails=500):
     try:
         mail = imaplib.IMAP4_SSL("imap.gmail.com", timeout=30)
         mail.login(GMAIL_USER, GMAIL_APP_PASSWORD)
-        mail.select("inbox")
+        status, _ = mail.select("INBOX")
+        if status != "OK":
+            raise RuntimeError("Unable to open Gmail INBOX via IMAP")
 
         # Search for emails since (today - days); IMAP format: DD-Mon-YYYY
         since_date = (datetime.utcnow() - timedelta(days=days)).strftime("%d-%b-%Y")
