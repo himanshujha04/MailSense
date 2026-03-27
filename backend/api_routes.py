@@ -175,15 +175,19 @@ def sync_gmail(db: Session = Depends(database.get_db)):
         skipped_count = 0
         
         for email_data in new_emails:
-            # Check for duplicates using Message-ID if available, else subject+sender
+            # Check for duplicates using Message-ID if available.
+            # Fallback also considers timestamp to avoid collapsing recurring
+            # messages from the same sender with the same subject.
             if email_data.message_id:
                 exists = db.query(models.Email).filter(
                     models.Email.message_id == email_data.message_id
                 ).first()
             else:
+                fallback_timestamp = email_data.timestamp
                 exists = db.query(models.Email).filter(
                     models.Email.subject == email_data.subject,
-                    models.Email.sender == email_data.sender
+                    models.Email.sender == email_data.sender,
+                    models.Email.timestamp == fallback_timestamp
                 ).first()
             
             if not exists:
@@ -223,14 +227,25 @@ def sync_gmail(db: Session = Depends(database.get_db)):
     except Exception as e:
         msg = str(e)
         # Make Gmail IMAP auth failures actionable
-        if "AUTHENTICATIONFAILED" in msg or "Invalid credentials" in msg:
+        if (
+            "AUTHENTICATIONFAILED" in msg
+            or "Invalid credentials" in msg
+            or "authentication failed" in msg.lower()
+        ):
             raise HTTPException(
                 status_code=401,
-                detail="Gmail IMAP authentication failed. Use a Google App Password (16-char) instead of your normal password, and ensure IMAP is enabled.",
+                detail=(
+                    "Gmail IMAP authentication failed. Ensure GMAIL_USER is your full "
+                    "Gmail address and GMAIL_APP_PASSWORD is a 16-character App Password "
+                    "(spaces removed), then restart the backend."
+                ),
             )
-        if "Application-specific password required" in msg:
+        if "Application-specific password required" in msg or "Web login required" in msg:
             raise HTTPException(
                 status_code=401,
-                detail="Google requires an App Password for IMAP. Create a Gmail App Password and set it as GMAIL_APP_PASSWORD in backend/.env, then restart the backend.",
+                detail=(
+                    "Google blocked IMAP login. Use a Gmail App Password from an account "
+                    "with 2-Step Verification enabled, and confirm IMAP access is allowed."
+                ),
             )
         raise HTTPException(status_code=500, detail=msg)
